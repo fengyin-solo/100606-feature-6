@@ -42,8 +42,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
-          <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
+        <tr v-for="row in rows" :key="String(row.id)" :class="{ 'row-pending': Boolean(row['占用待办']) }">
+          <td v-for="column in columns" :key="column" :class="{ 'todo-cell': column === '占用待办' }">{{ row[column] ?? '—' }}</td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
             <button
@@ -82,7 +82,7 @@ import {
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('team')
-const columns = ["班组编号", "班组名称", "负责区域", "在岗人数", "班次时段", "带班人员", "轮休安排", "班组状态"]
+const columns = ["班组编号", "班组名称", "负责区域", "在岗人数", "班次时段", "带班人员", "轮休安排", "占用待办", "班组状态"]
 const actions = ["确认在岗", "安排轮休", "提交培训"]
 const statuses = ["在岗", "轮休", "培训中", "已解散"]
 const stats = [{"label": "在册班组", "value": 0}, {"label": "在岗班组", "value": 0}, {"label": "轮休班组", "value": 0}]

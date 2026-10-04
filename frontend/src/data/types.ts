@@ -32,6 +32,47 @@ export type ActionResult = {
   message: string
 }
 
+export type OccupancyConflictInfo = {
+  kind: 'stand' | 'team' | 'both'
+  primary: 'stand' | 'team'
+  message: string
+}
+
+export type FlightConflictRow = {
+  flightId: number
+  flightNo: string
+  arrival: string
+  standNo: string
+  teamName: string
+  kind: 'stand' | 'team' | 'both'
+  primary: 'stand' | 'team'
+  message: string
+}
+
+export type FilterConflictReport = {
+  scanned: number
+  conflictCount: number
+  standEvidenceCount: number
+  teamEvidenceCount: number
+  conflicts: FlightConflictRow[]
+}
+
+export type CreateFlightInput = {
+  航班号: string
+  机型: string
+  计划到达: string
+  机位号: string
+  保障等级: string
+  保障班组: string
+}
+
+export type CreateFlightResult = {
+  ok: boolean
+  message: string
+  entry: EntryRow | null
+  conflict: OccupancyConflictInfo | null
+}
+
 export type OverviewResult = {
   cards: { label: string; value: number }[]
   modules: { name: string; created: number; pending: number; abnormal: number }[]

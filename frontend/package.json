@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "test:build": "node test/build.cjs",
+    "test": "node test/build.cjs && node test/occupancy.test.cjs"
   },
   "dependencies": {
     "pinia": "^2.1.7",
