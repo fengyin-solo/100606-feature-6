@@ -37,13 +37,19 @@
       <thead>
         <tr>
           <th v-for="column in columns" :key="column">{{ column }}</th>
+          <th>同时段在岗冲突</th>
           <th>当前状态</th>
           <th>可执行动作</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
+        <tr v-for="row in rows" :key="String(row.id)" :class="{ conflicted: conflictOf(row) > 0 }">
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
+          <td>
+            <span :class="conflictOf(row) > 0 ? 'conflict-num' : 'muted-text'">
+              {{ conflictOf(row) }} 条
+            </span>
+          </td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
             <button
@@ -58,7 +64,7 @@
           </td>
         </tr>
         <tr v-if="!rows.length">
-          <td :colspan="columns.length + 2" class="empty-state">暂无保障班组数据，可先登记保障班组</td>
+          <td :colspan="columns.length + 3" class="empty-state">暂无保障班组数据，可先登记保障班组</td>
         </tr>
       </tbody>
     </table>
@@ -78,6 +84,7 @@ import {
   listEntries,
   moduleMeta,
   runAction as applyAction,
+  teamConflictLoad,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
 
@@ -92,12 +99,18 @@ const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+// 班组侧读到的冲突数：与航班筛选页班组侧计数来自同一份占用台账。
+const load = ref<Map<string, number>>(new Map())
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
     count: rows.value.filter((row) => String(row.status) === status).length,
   })),
 )
+
+function conflictOf(row: EntryRow): number {
+  return load.value.get(String(row['班组名称'] ?? '')) ?? 0
+}
 
 function resetFilters() {
   filters.value = {}
@@ -128,6 +141,7 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    load.value = teamConflictLoad()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '保障班组列表读取失败'
   }
@@ -135,3 +149,16 @@ function reload() {
 
 onMounted(reload)
 </script>
+
+<style scoped>
+tr.conflicted td {
+  background: #fff7f6;
+}
+.conflict-num {
+  color: #b42318;
+  font-weight: 600;
+}
+.muted-text {
+  color: var(--muted);
+}
+</style>

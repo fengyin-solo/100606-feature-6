@@ -42,8 +42,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
-          <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
+        <tr v-for="row in rows" :key="String(row.id)" :class="{ 'has-todo': String(row['占用待办'] ?? '') !== '' }">
+          <td v-for="column in columns" :key="column">
+            <template v-if="column === '占用待办'">
+              <span v-if="row['占用待办']" class="todo-text">{{ row['占用待办'] }}</span>
+              <span v-else class="muted-text">—</span>
+            </template>
+            <template v-else>{{ row[column] ?? '—' }}</template>
+          </td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
             <button
@@ -75,14 +81,14 @@ import { computed, onMounted, ref } from 'vue'
 
 import {
   downloadEntries,
-  listEntries,
+  listStandEntries,
   moduleMeta,
   runAction as applyAction,
 } from '@/api/local-service'
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('stand')
-const columns = ["机位编号", "机位类型", "适用机型", "廊桥配置", "近远机位", "占用时段", "当前航班", "机位状态"]
+const columns = ["机位编号", "机位类型", "适用机型", "廊桥配置", "近远机位", "占用时段", "当前航班", "占用待办"]
 const actions = ["分配机位", "释放机位", "封闭机位"]
 const statuses = ["空闲", "占用中", "维护中", "已封闭"]
 const stats = [{"label": "可用机位", "value": 0}, {"label": "占用中机位", "value": 0}, {"label": "封闭机位", "value": 0}]
@@ -125,7 +131,7 @@ function runAction(action: string, row: EntryRow) {
 function reload() {
   errorMessage.value = ''
   try {
-    const payload = listEntries(meta.key, filters.value)
+    const payload = listStandEntries(filters.value)
     rows.value = payload.items
     total.value = payload.total
   } catch (error) {
@@ -135,3 +141,17 @@ function reload() {
 
 onMounted(reload)
 </script>
+
+<style scoped>
+tr.has-todo td {
+  background: #fffaf0;
+}
+.todo-text {
+  color: #b54708;
+  font-size: 12px;
+  white-space: pre-line;
+}
+.muted-text {
+  color: var(--muted);
+}
+</style>
